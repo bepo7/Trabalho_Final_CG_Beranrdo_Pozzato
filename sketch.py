@@ -61,9 +61,9 @@ Z_SPAWN  = 440.0          # bonecos nascem bem longe (pista grande)
 
 R_MIN, R_MAX = 20.0, 360.0    # alcance maximo do tiro aumentado
 A_MIN, A_MAX = 40.0, 150.0
-T_MIN, T_MAX = 20,  32
+T_MIN, T_MAX = 12,  20
 
-FIRE_PERIOD = 72
+FIRE_PERIOD = 45
 SPLASH_Z    = 34.0
 START_LIVES = 3           # <<< 3 VIDAS
 WAVES_PER_PHASE = 5       # ondas por fase (boss na ultima)
@@ -75,7 +75,7 @@ TERRAIN_AMP = 100.0          # (mantido so para a pintura do chao)
 # --------- PODERES ESPECIAIS (parametros) ---------
 PICKUP_TTL        = 360      # quadros que a bolinha do mini boss fica no campo
 FIRE_BOOST_FRAMES = 600      # duracao do TIRO RAPIDO (em quadros)
-FIRE_BOOST_PERIOD = 26       # periodo do tiro quando acelerado (menor = + rapido)
+FIRE_BOOST_PERIOD = 15       # periodo do tiro quando acelerado (menor = + rapido)
 BOMB_DMG          = 4        # dano da BOMBA DE NEVE
 BOMB_SPLASH_Z     = SPLASH_Z * 1.9   # alcance (em z) da bomba
 
