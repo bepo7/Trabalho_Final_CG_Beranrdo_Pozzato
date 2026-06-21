@@ -1526,12 +1526,20 @@ def draw_menu_snowman(is_evil):
     fill(0)
     for i in range(-3, 4):
         push()
+        x_m = i * 1.0
         if is_evil:
             # Centro mais alto (-27.5), bordas mais baixas (-26.6) = Frown (triste/bravo)
-            translate(i * 1.0, -27.5 + (i * i) / 10.0, 7.2)
+            y_m = -27.5 + (i * i) / 10.0
         else:
             # Centro mais baixo (-26.0), bordas mais altas (-26.75) = Smile (sorrindo)
-            translate(i * 1.0, -26.0 - (i * i) / 12.0, 7.2)
+            y_m = -26.0 - (i * i) / 12.0
+        
+        # Projetar exatamente na superficie da cabeca (centro y=-30, raio=8)
+        dy = y_m - (-30.0)
+        val = 64.0 - x_m**2 - dy**2
+        z_m = (val**0.5 if val > 0 else 7.0) + 0.2  # +0.2 para saltar da neve
+        
+        translate(x_m, y_m, z_m)
         sphere(0.35)
         pop()
 
