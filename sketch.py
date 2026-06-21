@@ -42,10 +42,6 @@
 #     R                       : reiniciar (volta para a tela de modo)
 #     mouse                   : arrastar para girar a camera (orbit)
 #
-#  TECLAS (fim de fase):
-#     S / ESPACO / ENTER : jogar a proxima fase
-#     N                  : parar por aqui
-#
 #  GAME OVER: tela cheia com botao "jogar de novo" (clique no botao ou R).
 # =====================================================================
 
