@@ -503,7 +503,8 @@ class Game:
             lane = lanes[i]
             big = (random.random() < min(0.10 + 0.04 * self.wave, 0.45))
             hp = 2 if big else 1
-            sv = speed * (0.85 if big else 1.0) + random.uniform(-0.03, 0.05)
+            # Acelera os bonecos normais multiplicando a velocidade base por 1.6 (ou 1.35 se 'big')
+            sv = speed * (1.35 if big else 1.6) + random.uniform(-0.03, 0.05)
             self.pending.append({'t': sp, 'lanes': [lane], 'hp': hp,
                                  'speed': sv, 'kind': 'normal'})
 
