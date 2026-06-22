@@ -1809,20 +1809,6 @@ def desenha_sol_nuvem_arco_iris():
     pop()
 
 
-def draw_castle_flash():
-    # overlay vermelho translucido sobre o castelo: pisca quando ele toma
-    # um hit (perde uma vida). Desenhado DENTRO do contexto local de
-    # castelo() (ja com o translate/scale dela aplicados), entao a posicao
-    # e o tamanho acompanham automaticamente.
-    t = constrain(game.flash_castle / 12.0, 0.0, 1.0)
-    push()
-    translate(0, -30.0, 0)
-    no_stroke()
-    fill(255, 30, 30, int(150 * t))
-    box(140.0, 130.0, 140.0)
-    pop()
-
-
 def castelo():
     push()
     translate(0, 25.0, -200.0)
@@ -1865,8 +1851,6 @@ def castelo():
         cone(10, -15, 8)
         pop()
     bandeira_flamengo()
-    if game.flash_castle > 0:
-        draw_castle_flash()
     pop()
 
 
