@@ -893,8 +893,8 @@ def draw_cannon(x, e, k):
     else:
         fill('#FFB800')
     sphere(15.0)
-    th = remap(e, -1.0, 1.0, math.radians(12), math.radians(58))
-    rotate_x(HALF_PI + th)
+    theta = remap(e, -1.0, 1.0, math.radians(12), math.radians(58))
+    rotate_x(HALF_PI + theta)
     translate(0, 15.0, 0)
     fill('#C74726')
     cylinder(7.5, 30.0)
@@ -1447,11 +1447,11 @@ def draw_menu_snowman(is_evil):
     # botoes
     fill(20)
     for i in range(3):
-        yb = -9.0 - i * 4.0
-        d = 169.0 - (yb + 13.0) ** 2
-        zb = (d if d > 0 else 0.0) ** 0.5
+        ybotao = -9.0 - i * 4.0
+        d = 169.0 - (ybotao + 13.0) ** 2
+        zbotao = (d if d > 0 else 0.0) ** 0.5
         push()
-        translate(0, yb, zb)
+        translate(0, ybotao, zbotao)
         sphere(1.0)
         pop()
     # cabeca
@@ -1500,20 +1500,20 @@ def draw_menu_snowman(is_evil):
     fill(0)
     for i in range(-3, 4):
         push()
-        x_m = i * 1.0
+        x_boca = i * 1.0
         if is_evil:
             # Centro mais alto (-27.5), bordas mais baixas (-26.6) = Frown (triste/bravo)
-            y_m = -27.5 + (i * i) / 10.0
+            y_boca = -27.5 + (i * i) / 10.0
         else:
             # Centro mais baixo (-26.0), bordas mais altas (-26.75) = Smile (sorrindo)
-            y_m = -26.0 - (i * i) / 12.0
+            y_boca = -26.0 - (i * i) / 12.0
         
         # Projetar exatamente na superficie da cabeca (centro y=-30, raio=8)
-        dy = y_m - (-30.0)
-        val = 64.0 - x_m**2 - dy**2
-        z_m = (val**0.5 if val > 0 else 7.0) + 0.2  # +0.2 para saltar da neve
+        delta_y_cabeca = y_boca - (-30.0)
+        z_quadrado = 64.0 - x_boca**2 - delta_y_cabeca**2
+        z_boca = (z_quadrado**0.5 if z_quadrado > 0 else 7.0) + 0.2  # +0.2 para saltar da neve
         
-        translate(x_m, y_m, z_m)
+        translate(x_boca, y_boca, z_boca)
         sphere(0.35)
         pop()
 
@@ -1626,9 +1626,6 @@ def draw_menu_screen():
     pop()
     no_stroke()
     pop()
-
-
-# (draw_panel_menu antigo removido - substituido por draw_menu_screen)
 
 
 def draw_panel_phase_clear():
