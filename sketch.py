@@ -55,7 +55,7 @@ CANVAS_H = 1500
 LANE_X   = [-150.0, -75.0, 0.0, 75.0, 150.0]   # x das 5 linhas
 Z_CASTLE_FRONT = -50.0
 Z_HIT    = -45.0          # boneco machuca o castelo quando z <= isso
-Z_CANNON =  10.0
+Z_CANNON =  0.0
 Z_CTRL   =  40.0
 Z_SPAWN  = 440.0          # bonecos nascem bem longe (pista grande)
 
@@ -64,24 +64,23 @@ A_MIN, A_MAX = 40.0, 150.0
 T_MIN, T_MAX = 12,  20
 
 FIRE_PERIOD = 45
-SPLASH_Z    = 34.0
+EXPLOSION_RAD    = 34.0
 START_LIVES = 3           # <<< 3 VIDAS
 WAVES_PER_PHASE = 5       # ondas por fase (boss na ultima)
-STEP        = 0.15            # cada seta sobe/desce mais o ponto (mais altura)
+CANON_ANG   = 0.15            # cada seta sobe/desce mais o ponto (mais altura)
 
-SNOW_N = 50
-TERRAIN_AMP = 100.0          # (mantido so para a pintura do chao)
+SNOW_N = 250
 
 # --------- PODERES ESPECIAIS (parametros) ---------
 PICKUP_TTL        = 360      # quadros que a bolinha do mini boss fica no campo
 FIRE_BOOST_FRAMES = 600      # duracao do TIRO RAPIDO (em quadros)
 FIRE_BOOST_PERIOD = 15       # periodo do tiro quando acelerado (menor = + rapido)
 BOMB_DMG          = 4        # dano da BOMBA DE NEVE
-BOMB_SPLASH_Z     = SPLASH_Z * 1.9   # alcance (em z) da bomba
+BOMB_EXPLOSION_RAD     = EXPLOSION_RAD * 1.9   # alcance (em z) da bomba
 
 # Posicao do HUD (coracoes/marcadores) no MUNDO, perto do topo da visao.
 # Se quiser subir/abaixar o HUD, mexa nestes dois valores:
-HUD_Y = -205.0
+HUD_Y = -305.0
 HUD_Z = 130.0
 # Centro dos paineis de fim de fase / parar:
 OVR_Y = -120.0
@@ -604,7 +603,7 @@ class Game:
         is_bomb = ball.bomb
         self.booms.append(Boom(x, y, z, self.now, explosao_grande=is_bomb))
         dmg = BOMB_DMG if is_bomb else 1
-        splash = BOMB_SPLASH_Z if is_bomb else SPLASH_Z
+        splash = BOMB_EXPLOSION_RAD if is_bomb else EXPLOSION_RAD
         # bomba atinge tambem as linhas vizinhas; tiro normal so a linha do canhao
         if is_bomb:
             hit_lanes = {ball.lane - 1, ball.lane, ball.lane + 1}
@@ -826,9 +825,9 @@ def key_pressed():
     elif kl == 'd' or k == 'ArrowRight':
         game.linha_selecionada = min(4, game.linha_selecionada + 1)
     elif kl == 'w' or k == 'ArrowUp':
-        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] + STEP, -1.0, 1.0)
+        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] + CANON_ANG, -1.0, 1.0)
     elif kl == 's' or k == 'ArrowDown':
-        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] - STEP, -1.0, 1.0)
+        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] - CANON_ANG, -1.0, 1.0)
     elif kl in ('1', '2', '3', '4', '5'):
         game.linha_selecionada = int(kl) - 1
     elif kl == 'g':
@@ -883,10 +882,9 @@ def draw_terrain():
         for x in xs:
             ha = terrain_height(x, za)
             hb = terrain_height(x, zb)
-            sa = (ha + hb) * 0.5 / TERRAIN_AMP
-            br = 120 + 95 * sa
-            bg = 205 + 30 * sa
-            bb = 130 + 70 * sa
+            
+            # Como o terreno é sempre plano, a cor base é estática
+            br, bg, bb = 120, 205, 130
             # marcador da lane: apenas troca de cor no trecho dela (sem overlay)
             m = clamp(1.0 - abs(x - LANE_X[game.linha_selecionada]) / 38.0, 0.0, 1.0) * 0.6
             fill(br + (250 - br) * m, bg + (238 - bg) * m, bb + (120 - bb) * m)
