@@ -92,16 +92,6 @@ BTN_H  = 160.0     # altura do botao
 BTN_CY = 230.0     # posicao vertical do botao (abaixo do centro)
 
 # --------------------------- HELPERS ---------------------------------
-def clamp(v, a, b):
-    return a if v < a else (b if v > b else v)
-
-def remap(v, a, b, c, d):
-    if b == a:
-        return c
-    return c + (d - c) * ((v - a) / (b - a))
-
-def interpolacao_linear(a, b, t):
-    return a + (b - a) * t
 
 def elevacoes_suavizadas(pontos_controle):
     n = len(pontos_controle)
@@ -110,7 +100,7 @@ def elevacoes_suavizadas(pontos_controle):
         anterior = pontos_controle[i - 1] if i - 1 >= 0 else pontos_controle[0]
         atual = pontos_controle[i]
         proximo = pontos_controle[i + 1] if i + 1 < n else pontos_controle[-1]
-        out.append(clamp((anterior + 4.0 * atual + proximo) / 6.0, -1.0, 1.0))
+        out.append(constrain((anterior + 4.0 * atual + proximo) / 6.0, -1.0, 1.0))
     return out
 
 def _bspline_seg(p0, p1, p2, p3, t):
@@ -152,10 +142,10 @@ def terrain_height(x, z):
 def cor_gelo_com_flash():
     # cor base do gelo; mistura pra vermelho quando o castelo acabou de
     # levar um hit (game.flash_castle > 0), criando um flash de dano.
-    intensidade_flash = clamp(game.flash_castle / 12.0, 0.0, 1.0)
-    r = interpolacao_linear(82.0, 255.0, intensidade_flash)
-    g = interpolacao_linear(212.0, 35.0, intensidade_flash)
-    b = interpolacao_linear(250.0, 35.0, intensidade_flash)
+    intensidade_flash = constrain(game.flash_castle / 12.0, 0.0, 1.0)
+    r = lerp(82.0, 255.0, intensidade_flash)
+    g = lerp(212.0, 35.0, intensidade_flash)
+    b = lerp(250.0, 35.0, intensidade_flash)
     return (r, g, b)
 
 
@@ -825,9 +815,9 @@ def key_pressed():
     elif kl == 'd' or k == 'ArrowRight':
         game.linha_selecionada = min(4, game.linha_selecionada + 1)
     elif kl == 'w' or k == 'ArrowUp':
-        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] + CANON_ANG, -1.0, 1.0)
+        game.pontos_controle[game.linha_selecionada] = constrain(game.pontos_controle[game.linha_selecionada] + CANON_ANG, -1.0, 1.0)
     elif kl == 's' or k == 'ArrowDown':
-        game.pontos_controle[game.linha_selecionada] = clamp(game.pontos_controle[game.linha_selecionada] - CANON_ANG, -1.0, 1.0)
+        game.pontos_controle[game.linha_selecionada] = constrain(game.pontos_controle[game.linha_selecionada] - CANON_ANG, -1.0, 1.0)
     elif kl in ('1', '2', '3', '4', '5'):
         game.linha_selecionada = int(kl) - 1
     elif kl == 'g':
@@ -863,7 +853,7 @@ def _colunas_terreno():
         s = set()
         n = 24
         for i in range(n + 1):
-            s.add(round(interpolacao_linear(-360.0, 360.0, i / float(n)), 3))
+            s.add(round(lerp(-360.0, 360.0, i / float(n)), 3))
         for lx in LANE_X:
             s.add(float(lx))
         _COLUNAS_TERRENO = sorted(s)
@@ -876,8 +866,8 @@ def draw_terrain():
     xs = _colunas_terreno()
     no_stroke()
     for iz in range(nz):
-        za = interpolacao_linear(z0, z1, iz / float(nz))
-        zb = interpolacao_linear(z0, z1, (iz + 1) / float(nz))
+        za = lerp(z0, z1, iz / float(nz))
+        zb = lerp(z0, z1, (iz + 1) / float(nz))
         begin_shape(QUAD_STRIP)
         for x in xs:
             ha = terrain_height(x, za)
@@ -886,7 +876,7 @@ def draw_terrain():
             # Como o terreno é sempre plano, a cor base é estática
             br, bg, bb = 120, 205, 130
             # marcador da lane: apenas troca de cor no trecho dela (sem overlay)
-            m = clamp(1.0 - abs(x - LANE_X[game.linha_selecionada]) / 38.0, 0.0, 1.0) * 0.6
+            m = constrain(1.0 - abs(x - LANE_X[game.linha_selecionada]) / 38.0, 0.0, 1.0) * 0.6
             fill(br + (250 - br) * m, bg + (238 - bg) * m, bb + (120 - bb) * m)
             vertex(x, -ha, za)
             vertex(x, -hb, zb)
@@ -1136,7 +1126,7 @@ def desenha_barra_vida(e, base_y):
     translate(e.x, pos_y_barra, e.z)
     fill(25, 25, 30)
     box(largura_barra + 3.0, 6.0, 3.0)
-    porcentagem_vida = clamp(e.hp / float(e.maxhp), 0.0, 1.0)
+    porcentagem_vida = constrain(e.hp / float(e.maxhp), 0.0, 1.0)
     push()
     translate(-(largura_barra - largura_barra * porcentagem_vida) / 2.0, 0, 2.0)
     fill(90, 220, 100)
@@ -1149,7 +1139,7 @@ def desenha_bolinhas_poder():
     # bolinha flutuante deixada pelo mini boss; pisca quando vai sumir
     for p in game.pickups:
         idade_frames = game.now - p.momento_nascimento
-        progresso_vida = clamp(idade_frames / float(PICKUP_TTL), 0.0, 1.0)
+        progresso_vida = constrain(idade_frames / float(PICKUP_TTL), 0.0, 1.0)
         oscilacao_y = math.sin(game.now * 0.12 + p.x) * 6.0
         altura_base = -terrain_height(p.x, p.z)
         y = altura_base - 34.0 + oscilacao_y
@@ -1833,7 +1823,7 @@ def draw_castle_flash():
     # um hit (perde uma vida). Desenhado DENTRO do contexto local de
     # castelo() (ja com o translate/scale dela aplicados), entao a posicao
     # e o tamanho acompanham automaticamente.
-    t = clamp(game.flash_castle / 12.0, 0.0, 1.0)
+    t = constrain(game.flash_castle / 12.0, 0.0, 1.0)
     push()
     translate(0, -30.0, 0)
     no_stroke()
