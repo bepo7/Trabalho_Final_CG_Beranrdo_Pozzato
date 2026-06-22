@@ -93,6 +93,9 @@ BTN_CY = 230.0     # posicao vertical do botao (abaixo do centro)
 
 # --------------------------- HELPERS ---------------------------------
 
+def remap(value, start1, stop1, start2, stop2):
+    return start2 + (stop2 - start2) * ((value - start1) / float(stop1 - start1))
+
 def elevacoes_suavizadas(pontos_controle):
     n = len(pontos_controle)
     out = []
@@ -442,10 +445,9 @@ class Game:
         # Reseta a camera para a visao inicial do jogo
         camera(0, -230.0, 560.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
         if mode == 'hard':
-            print("=== MODO DIFICIL ===  so MINI BOSS e BOSS!"
-                  " (otimo p/ testar os poderes)")
+            print("=== MODO DIFICIL ===  so MINI BOSS e BOSS!")
         else:
-            print("=== FASE 1 ===  |  defenda o castelo (3 vidas)")
+            print("=== FASE 1 ===  |  Defenda o castelo (3 vidas)")
 
     def next_phase(self):
         self.phase += 1
@@ -474,28 +476,28 @@ class Game:
         random.shuffle(lanes)
         self.pending = []
         for i in range(count):
-            sp = base + i * random.randint(26, 44)
+            spawn = base + i * random.randint(26, 44)
             lane = lanes[i]
-            big = (random.random() < min(0.10 + 0.04 * self.wave, 0.45))
+            big = (random.random() < min(0.10 + 0.06 * self.wave, 0.45))
             hp = 2 if big else 1
             # Acelera os bonecos normais multiplicando a velocidade base por 1.6 (ou 1.35 se 'big')
-            sv = speed * (1.35 if big else 1.6) + random.uniform(-0.03, 0.05)
-            self.pending.append({'t': sp, 'lanes': [lane], 'hp': hp,
-                                 'speed': sv, 'kind': 'normal'})
+            speed_adj = speed * (1.35 if big else 1.6) + random.uniform(-0.03, 0.05)
+            self.pending.append({'t': spawn, 'lanes': [lane], 'hp': hp,
+                                 'speed': speed_adj, 'kind': 'normal'})
 
         # MINI BOSS (2 linhas) em ondas impares >= 3
         if 3 <= self.wave < WAVES_PER_PHASE and self.wave % 2 == 1:
             k = random.randint(0, 3)
-            mhp = 6 + self.phase * 2
+            mini_hp = 6 + self.phase * 2
             self.pending.append({'t': base + count * 9, 'lanes': [k, k + 1],
-                                 'hp': mhp, 'speed': speed * 0.70, 'kind': 'mini'})
+                                 'hp': mini_hp, 'speed': speed * 0.70, 'kind': 'mini'})
 
         # BOSS (3 linhas) na ultima onda
         if self.wave >= WAVES_PER_PHASE:
             k = random.randint(0, 2)
-            bhp = 14 + self.phase * 4
+            boss_hp = 14 + self.phase * 4
             self.pending.append({'t': base + 50, 'lanes': [k, k + 1, k + 2],
-                                 'hp': bhp, 'speed': speed * 0.55, 'kind': 'boss'})
+                                 'hp': boss_hp, 'speed': speed * 0.55, 'kind': 'boss'})
 
         self.start_next_wave_pending = False
         print("== Fase", self.phase, "- Onda", self.wave, "de", WAVES_PER_PHASE,
@@ -509,19 +511,19 @@ class Game:
         n_mini = min(2 + self.wave, 6)
         for i in range(n_mini):
             k = random.randint(0, 3)              # ocupa k e k+1
-            mhp = 5 + self.phase * 2 + self.wave
-            sp = base + i * random.randint(45, 75)
-            self.pending.append({'t': sp, 'lanes': [k, k + 1],
-                                 'hp': mhp, 'speed': speed * 0.70,
+            mini_hp = 5 + self.phase * 2 + self.wave
+            spawn = base + i * random.randint(45, 75)
+            self.pending.append({'t': spawn, 'lanes': [k, k + 1],
+                                 'hp': mini_hp, 'speed': speed * 0.70,
                                  'kind': 'mini'})
         last_mini = base + n_mini * 75
         n_boss = 2 if self.wave >= WAVES_PER_PHASE else 1
         for i in range(n_boss):
             k = random.randint(0, 2)              # ocupa k, k+1 e k+2
-            bhp = 12 + self.phase * 4 + self.wave * 2
-            sp = last_mini + 40 + i * 110
-            self.pending.append({'t': sp, 'lanes': [k, k + 1, k + 2],
-                                 'hp': bhp, 'speed': speed * 0.55,
+            boss_hp = 12 + self.phase * 4 + self.wave * 2
+            spawn = last_mini + 40 + i * 110
+            self.pending.append({'t': spawn, 'lanes': [k, k + 1, k + 2],
+                                 'hp': boss_hp, 'speed': speed * 0.55,
                                  'kind': 'boss'})
         self.start_next_wave_pending = False
         print("== [DIFICIL] Fase", self.phase, "- Onda", self.wave, "de",
@@ -646,21 +648,21 @@ class Game:
         nome = "TIRO RAPIDO" if kind == 'fire' else "BOMBA DE NEVE"
         tecla = 'B' if kind == 'fire' else 'U'
         print(">>", nome + ": mova ate o canhao (A/D ou 1-5) e", tecla,
-              "p/ confirmar | canhao atual:", self.sel + 1)
+              "p/ confirmar | canhao atual:", self.linha_selecionada + 1)
 
     def confirm_power(self):
         kind = self.power_mode
-        k = self.sel
+        lane = self.linha_selecionada
         if kind is None or self.powers.get(kind, 0) <= 0:
             self.power_mode = None
             return
         self.powers[kind] -= 1
         if kind == 'fire':
-            self.fire_boost[k] += FIRE_BOOST_FRAMES
-            print(">> TIRO RAPIDO ativado no canhao", k + 1)
+            self.fire_boost[lane] += FIRE_BOOST_FRAMES
+            print(">> TIRO RAPIDO ativado no canhao", lane + 1)
         else:
-            self.bomb_charge[k] += 1
-            print(">> BOMBA DE NEVE armada no canhao", k + 1, "(proximo tiro)")
+            self.bomb_charge[lane] += 1
+            print(">> BOMBA DE NEVE armada no canhao", lane + 1, "(proximo tiro)")
         self.power_mode = None
 
     def update(self, now):
