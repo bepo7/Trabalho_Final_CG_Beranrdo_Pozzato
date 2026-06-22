@@ -1366,7 +1366,8 @@ def draw_hud():
     n = START_LIVES
     sz = 13.0
     spacing = 38.0
-    x0 = -((n - 1) * spacing) / 2.0
+    # Desloca os corações em +9.0 para centralizar com os poderes (cujo centro é 9.0)
+    x0 = -((n - 1) * spacing) / 2.0 + 9.0
 
     # vidas (coracoes) no alto
     for i in range(n):
@@ -1385,8 +1386,8 @@ def draw_hud():
     draw_power_icon('fire', -56.0, py, HUD_Z, big=fire_big)
     desenha_numero(game.powers['fire'], -30.0, py, HUD_Z, 255, 180, 60)
     # grupo direito: BOMBA DE NEVE (azul)
-    draw_power_icon('bomb', 22.0, py, HUD_Z, big=bomb_big)
     desenha_numero(game.powers['bomb'], 48.0, py, HUD_Z, 150, 210, 255)
+    draw_power_icon('bomb', 74.0, py, HUD_Z, big=bomb_big)
 
     # durante a escolha, mostra o canhao alvo (lane selecionada) piscando
     if game.power_mode is not None and (game.now // 12) % 2 == 0:
