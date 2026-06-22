@@ -230,7 +230,7 @@ def cilindro_de_gelo(raio, altura, segmentos=12, linhas_blocos=None):
 GRASS_TEMPLATES    = []    # lista de templates (cada um = lista de folhas)
 GRASS_BY_TEMPLATE  = {}    # tidx -> [(gx, gz, ph_off)]  (agrupado no init)
 GRASS_N_TEMPLATES  = 14    # templates distintos
-GRASS_BLADES_PER   = 5     # folhas por template
+GRASS_BLADES_PER   = 7     # folhas por template
 GRASS_SEGMENTS     = 3     # segmentos por curva (3 e suficiente)
 # Grid de distribuicao uniforme (colunas x linhas) com jitter
 GRASS_GRID_COLS    = 15
@@ -284,45 +284,48 @@ def draw_grass():
     if not GRASS_BY_TEMPLATE:
         return
     no_fill()
-    t = frame_count
-    spd = 0.065
-    segs = GRASS_SEGMENTS
-    inv_s = 1.0 / segs
-    # pre-compute os t-values (fixo, 3 segmentos = valores 0, 0.333, 0.667, 1)
-    tvs = [si * inv_s for si in range(segs + 1)]
+    tempo_atual = frame_count
+    speed = 0.065
+    numero_segmentos = GRASS_SEGMENTS
+    inverso_segmentos = 1.0 / numero_segmentos
+    # pre-compute os valores do parâmetro 't' (tempo da curva)
+    valores_t_precalculados = [indice_segmento * inverso_segmentos for indice_segmento in range(numero_segmentos + 1)]
 
-    for tidx in range(GRASS_N_TEMPLATES):
-        positions = GRASS_BY_TEMPLATE.get(tidx)
-        if not positions:
+    for indice_template in range(GRASS_N_TEMPLATES):
+        posicoes_no_mapa = GRASS_BY_TEMPLATE.get(indice_template)
+        if not posicoes_no_mapa:
             continue
-        template = GRASS_TEMPLATES[tidx]
-        for bl in template:
-            # sin individual do blade (constante para todas as posicoes)
-            sw_ind = math.sin(bl['phase'] + t * 0.02) * 1.2
-            dx = bl['dx']; dz = bl['dz']; bh = bl['h']; bsw = bl['sway']
-            stroke(bl['r'], bl['g'], 25, 200)
+        template_atual = GRASS_TEMPLATES[indice_template]
+        for folha in template_atual:
+            # balanço individual desta folha (constante para todas as posicoes clonadas)
+            balanco_individual = math.sin(folha['phase'] + tempo_atual * 0.02) * 1.2
+            desloc_x = folha['dx']
+            desloc_z = folha['dz']
+            altura_folha = folha['h']
+            forca_balanco = folha['sway']
+            stroke(folha['r'], folha['g'], 25, 200)
             stroke_weight(1.1)
-            # BATCH: todas as posicoes deste blade em UM unico LINES shape
+            # BATCH: desenha todas as folhas idênticas de uma só vez
             begin_shape(LINES)
-            for gx, gz, ph_off in positions:
-                wind  = math.sin(t * spd + ph_off)
-                wind2 = math.sin(t * spd * 1.3 + ph_off + 1.0) * 0.5
-                bx = gx + dx
-                bz = gz + dz
-                sw  = bsw * wind + sw_ind
-                sw2 = bsw * wind2
-                # pontos de controle
-                p0x = bx;          p0y = 0.0;          p0z = bz
-                p1x = bx+sw*0.3;  p1y = -bh*0.35;     p1z = bz+sw2*0.2
-                p2x = bx+sw*0.7;  p2y = -bh*0.7;      p2z = bz+sw2*0.5
-                p3x = bx+sw;      p3y = -bh;           p3z = bz+sw2
-                # emite pares de vertices (segmentos de linha)
-                prev = bezier_cubica_ponto(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z, 0)
-                for si in range(1, segs + 1):
-                    cur = bezier_cubica_ponto(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z, tvs[si])
-                    vertex(prev[0], prev[1], prev[2])
-                    vertex(cur[0],  cur[1],  cur[2])
-                    prev = cur
+            for x_global, z_global, diferenca_fase in posicoes_no_mapa:
+                vento_base  = math.sin(tempo_atual * speed + diferenca_fase)
+                vento_ponta = math.sin(tempo_atual * speed * 1.3 + diferenca_fase + 1.0) * 0.5
+                x_base = x_global + desloc_x
+                z_base = z_global + desloc_z
+                inclinacao_vento  = forca_balanco * vento_base + balanco_individual
+                inclinacao_vento_ponta = forca_balanco * vento_ponta
+                # pontos de controle da curva de Bezier
+                p0x = x_base;                             p0y = 0.0;                       p0z = z_base
+                p1x = x_base + inclinacao_vento * 0.3;    p1y = -altura_folha * 0.35;      p1z = z_base + inclinacao_vento_ponta * 0.2
+                p2x = x_base + inclinacao_vento * 0.6;    p2y = -altura_folha * 0.7;       p2z = z_base + inclinacao_vento_ponta * 0.5
+                p3x = x_base + inclinacao_vento;          p3y = -altura_folha;             p3z = z_base + inclinacao_vento_ponta
+                # emite pares de vertices (segmentos retos) para montar a curva
+                ponto_anterior = bezier_cubica_ponto(p0x, p0y, p0z, p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z, 0)
+                for indice_segmento in range(1, numero_segmentos + 1):
+                    ponto_atual = bezier_cubica_ponto(p0x, p0y, p0z, p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z, valores_t_precalculados[indice_segmento])
+                    vertex(ponto_anterior[0], ponto_anterior[1], ponto_anterior[2])
+                    vertex(ponto_atual[0],    ponto_atual[1],    ponto_atual[2])
+                    ponto_anterior = ponto_atual
             end_shape()
 
 
