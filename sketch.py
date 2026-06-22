@@ -179,17 +179,6 @@ def muro_de_gelo(largura, altura, profundidade, num_blocos_x=None, num_blocos_y=
                 if x >= -largura / 2.0:
                     line(x, y0, face_z, x, y1, face_z)
                 x += tamanho_bloco_x
-    # uns poucos patches translucidos para variacao de cor (muito barato)
-    for i in range(min(5, num_blocos_x)):
-        variacao_cor = (i * 137 + 53) % 256
-        patch_x = -largura / 2.0 + tamanho_bloco_x * ((i * num_blocos_x // 5) % num_blocos_x) + tamanho_bloco_x / 2.0
-        patch_y = -altura / 2.0 + tamanho_bloco_y * (variacao_cor % num_blocos_y) + tamanho_bloco_y / 2.0
-        push()
-        translate(patch_x, patch_y, deslocamento_z + 0.02)
-        no_stroke()
-        fill(55 + variacao_cor % 45, 190 + variacao_cor % 35, 230 + variacao_cor % 25, 60)
-        box(tamanho_bloco_x * 0.85, tamanho_bloco_y * 0.85, 0.15)
-        pop()
     pop()
 
 
