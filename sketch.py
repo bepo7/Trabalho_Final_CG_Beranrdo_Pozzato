@@ -128,12 +128,6 @@ def altura_canhao_de_controle(valor_controle):
     return remap(valor_controle, -1.0, 1.0, -20.0, -170.0)
 
 
-def terrain_height(x, z):
-    # chao SEMPRE plano: a curva (B-spline) continua subindo/descendo
-    # e mudando o angulo/alcance dos canhoes, mas o terreno NAO acompanha
-    # mais o movimento dos pontos de controle.
-    return 0.0
-
 # ----------------------- TEXTURA DE GELO (tijolos) -------------------
 # OTIMIZADO: em vez de centenas de box() individuais por parede/torre,
 # desenha 1 forma base (box/cylinder/cone) + linhas de argamassa por cima.
@@ -612,7 +606,7 @@ class Game:
         for b in self.balls:
             x, y, z, t = b.pos(self.now)
             if t >= 1.0 and not b.exploded:
-                self.explode_at(b, x, -terrain_height(x, z), z)
+                self.explode_at(b, x, 0.0, z)
         self.balls = [b for b in self.balls if b.alive]
 
     def enemies_update(self):
@@ -870,16 +864,13 @@ def draw_terrain():
         zb = lerp(z0, z1, (iz + 1) / float(nz))
         begin_shape(QUAD_STRIP)
         for x in xs:
-            ha = terrain_height(x, za)
-            hb = terrain_height(x, zb)
-            
             # Como o terreno é sempre plano, a cor base é estática
             br, bg, bb = 120, 205, 130
             # marcador da lane: apenas troca de cor no trecho dela (sem overlay)
             m = constrain(1.0 - abs(x - LANE_X[game.linha_selecionada]) / 38.0, 0.0, 1.0) * 0.6
             fill(br + (250 - br) * m, bg + (238 - bg) * m, bb + (120 - bb) * m)
-            vertex(x, -ha, za)
-            vertex(x, -hb, zb)
+            vertex(x, 0.0, za)
+            vertex(x, 0.0, zb)
         end_shape()
 
 
@@ -898,7 +889,7 @@ def draw_cannons():
 
 def draw_cannon(x, e, k):
     push()
-    translate(x, -13.0 - terrain_height(x, Z_CANNON), Z_CANNON)
+    translate(x, -13.0, Z_CANNON)
     no_stroke()
     # base do canhao muda de cor quando tem poder ativo/armado naquela linha
     if game.bomb_charge[k] > 0:
@@ -938,7 +929,7 @@ def draw_reticles():
             a = i * (TWO_PI / segs)
             px = cxr + rad * math.cos(a)
             pz = zl + rad * math.sin(a)
-            py = -terrain_height(px, pz) - 1.5
+            py = -1.5
             if prev is not None:
                 line(prev[0], prev[1], prev[2], px, py, pz)
             prev = (px, py, pz)
@@ -950,7 +941,7 @@ def draw_power_target():
         return
     k = game.linha_selecionada
     x = LANE_X[k]
-    yb = -13.0 - terrain_height(x, Z_CANNON)
+    yb = -13.0
     col = (255, 150, 40) if game.power_mode == 'fire' else (120, 210, 255)
     pulse = 0.6 + 0.4 * math.sin(game.now * 0.25)
     push()
@@ -999,7 +990,7 @@ def draw_bspline():
         push()
         stroke(255, 255, 255, 130)
         stroke_weight(1)
-        line(cx, cy, cz, cx, -13.0 - terrain_height(cx, Z_CANNON), Z_CANNON)
+        line(cx, cy, cz, cx, -13.0, Z_CANNON)
         pop()
         push()
         no_stroke()
@@ -1025,7 +1016,7 @@ def desenha_inimigos():
 
 
 def desenha_inimigo(e):
-    base_y = -terrain_height(e.x, e.z)
+    base_y = 0.0
     push()
     translate(e.x, base_y, e.z)
     escala_tamanho = e.r / 16.0
@@ -1141,7 +1132,7 @@ def desenha_bolinhas_poder():
         idade_frames = game.now - p.momento_nascimento
         progresso_vida = constrain(idade_frames / float(PICKUP_TTL), 0.0, 1.0)
         oscilacao_y = math.sin(game.now * 0.12 + p.x) * 6.0
-        altura_base = -terrain_height(p.x, p.z)
+        altura_base = 0.0
         y = altura_base - 34.0 + oscilacao_y
         alpha = 255 if progresso_vida < 0.7 else int(255 * (1.0 - (progresso_vida - 0.7) / 0.3))
         if alpha < 0:
