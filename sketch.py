@@ -443,7 +443,7 @@ class Game:
         self._init_run()
         self.state = 'play'
         # Reseta a camera para a visao inicial do jogo
-        camera(0, -260.0, 620.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
+        camera(0, -290.0, 660.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
         if mode == 'hard':
             print("=== MODO DIFICIL ===  so MINI BOSS e BOSS!")
         else:
@@ -705,7 +705,7 @@ game = Game()
 def setup():
     create_canvas(CANVAS_W, CANVAS_H, WEBGL)
     # VISAO ORIGINAL: de frente para os canhoes (olho em +z, olhando -z)
-    camera(0, -260.0, 620.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
+    camera(0, -290.0, 660.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
     _init_grass()   # gera as posicoes das folhas de grama
     print("DEFESA DO CASTELO | A/D linha, W/S sobe/desce, 1-5 linha,",
           "G pega bolinha, B tiro rapido, U bomba de neve,",
