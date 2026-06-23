@@ -80,7 +80,7 @@ BOMB_EXPLOSION_RAD     = EXPLOSION_RAD * 1.9   # alcance (em z) da bomba
 
 # Posicao do HUD (coracoes/marcadores) no MUNDO, perto do topo da visao.
 # Se quiser subir/abaixar o HUD, mexa nestes dois valores:
-HUD_Y = -275.0
+HUD_Y = -305.0
 HUD_Z = 130.0
 # Centro dos paineis de fim de fase / parar:
 OVR_Y = -120.0
@@ -443,7 +443,7 @@ class Game:
         self._init_run()
         self.state = 'play'
         # Reseta a camera para a visao inicial do jogo
-        camera(0, -230.0, 560.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
+        camera(0, -230.0, 580.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
         if mode == 'hard':
             print("=== MODO DIFICIL ===  so MINI BOSS e BOSS!")
         else:
@@ -705,7 +705,7 @@ game = Game()
 def setup():
     create_canvas(CANVAS_W, CANVAS_H, WEBGL)
     # VISAO ORIGINAL: de frente para os canhoes (olho em +z, olhando -z)
-    camera(0, -230.0, 560.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
+    camera(0, -230.0, 580.0, 0.0, -40.0, 40.0, 0.0, 1.0, 0.0)
     _init_grass()   # gera as posicoes das folhas de grama
     print("DEFESA DO CASTELO | A/D linha, W/S sobe/desce, 1-5 linha,",
           "G pega bolinha, B tiro rapido, U bomba de neve,",
